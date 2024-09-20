@@ -18,6 +18,7 @@ User-facing script. Pipeline takes in an input and calls external classes for:
 6. Predict
 
 Start with getting "TinyLlama-1.1B-Chat-v1.0" working!
+https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0
 """
 
 if __name__ == "__main__":
