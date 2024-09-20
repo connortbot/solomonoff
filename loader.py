@@ -1,6 +1,6 @@
 """
 Filename: loader.py
-Description: Loads TinyLlama-1.1B-Chat-v1.0 using safetensors
+Description: Helpers for loading models using safetensors
 
 Notes:
 
