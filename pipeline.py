@@ -22,6 +22,7 @@ Notes:
 - decided against external file, will make helpers inside of Pipeline
 2. Positional Encodings/Rotary Embeddings
 3. Attention Mechanism (Scaled Dot-Product Attention) -> (Multi-Head Attention) [CONNOR]
+- Tinyllama uses GQA so it needs to be implemented
 4. Layer Normalization
 5. Feed Forward Network
 6. Transformer Block Class (combines all elements of transformer block)
