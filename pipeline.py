@@ -6,19 +6,34 @@ Version: v0.0.0
 =================================================
 """
 
+"""
+Filename: pipeline.py
+
+Description: Helpers for loading models using safetensors. 
+User-facing script. Pipeline takes in an input and calls external classes for inference to generate output.
+
+Notes:
 
 """
-File: pipeline.py
-User-facing script. Pipeline takes in an input and calls external classes for:
-1. Tokenization
-2. Embeddings
-3. Positional Encoding
-4. N x Transformer Block
-5. Output Lyaer ? 
-6. Predict
 
-Start with getting "TinyLlama-1.1B-Chat-v1.0" working!
-https://huggingface.co/TinyLlama/TinyLlama-1.1B-Chat-v1.0
+"""
+?????????????????? TO DO LIST ????????????????????
+
+1. Tokenization and Input Handling
+2. Positional Encodings/Rotary Embeddings
+3. Attention Mechanism (Scaled Dot-Product Attention) -> (Multi-Head Attention)
+4. Layer Normalization
+5. Feed Forward Network
+6. Transformer Block Class (combines all elements of transformer block)
+7. Output Layer
+8. Softmax (for logits to probabilities)
+9. Greedy Decoding
+10. Positional Masking (?)
+11. Token Decoding
+11. Finished CausalLM 
+12. Pipeline
+
+??????????????????????????????????????????????????
 """
 
 if __name__ == "__main__":
