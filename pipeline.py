@@ -9,8 +9,7 @@ Version: v0.0.0
 """
 Filename: pipeline.py
 
-Description: Helpers for loading models using safetensors. 
-User-facing script. Pipeline takes in an input and calls external classes for inference to generate output.
+Description: User-facing script. Pipeline takes in an input and calls external classes for inference to generate output.
 
 Notes:
 
@@ -20,6 +19,7 @@ Notes:
 ?????????????????? TO DO LIST ????????????????????
 
 1. Tokenization and Input Handling [CONNOR]
+- decided against external file, will make helpers inside of Pipeline
 2. Positional Encodings/Rotary Embeddings
 3. Attention Mechanism (Scaled Dot-Product Attention) -> (Multi-Head Attention) [CONNOR]
 4. Layer Normalization
@@ -36,5 +36,33 @@ Notes:
 ??????????????????????????????????????????????????
 """
 
+import torch
+from transformers import AutoTokenizer
+
+class Pipeline():
+    def __init__(
+        self,
+        model_dir
+    ):
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            str(model_dir), trust_remote_code=True
+        )
+
+    def _tokenize_encode(self, prompt):
+        token_ids_original = self.tokenizer.encode(prompt)
+        # should trim to max prompt length here
+        token_ids_original = torch.tensor(token_ids_original, dtype=torch.int64).to("cpu")
+        return token_ids_original
+
+
 if __name__ == "__main__":
-    pass
+
+    # Model IDs and their paths
+    models = {
+        "TinyLlama/TinyLlama-1.1B-Chat-v1.0": "files/TinyLlama-1.1B-Chat-v1.0/model.safetensors"
+    }
+
+    pipeline = Pipeline(
+        "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+    )
+    print(pipeline._tokenize_encode("Hello, my name is Connor!"))
