@@ -19,9 +19,9 @@ Notes:
 """
 ?????????????????? TO DO LIST ????????????????????
 
-1. Tokenization and Input Handling
+1. Tokenization and Input Handling [CONNOR]
 2. Positional Encodings/Rotary Embeddings
-3. Attention Mechanism (Scaled Dot-Product Attention) -> (Multi-Head Attention)
+3. Attention Mechanism (Scaled Dot-Product Attention) -> (Multi-Head Attention) [CONNOR]
 4. Layer Normalization
 5. Feed Forward Network
 6. Transformer Block Class (combines all elements of transformer block)
