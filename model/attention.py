@@ -154,16 +154,16 @@ class SelfAttention(nn.Module):
         k, v = self.kv_cache()
 
         # [L, num_attention_heads, d_head] --> [num_attention_heads, L, d_head]
-        q = q.permute(2, 1, 3).contiguous()
+        q = q.permute(1, 0, 2).contiguous()
         # [L_kv, num_key_value_heads, d_head] --> [num_key_value_heads, L_kv, d_head]
-        k = k.permute(2, 1, 3).contiguous()
-        v = v.permute(2, 1, 3).contiguous()
+        k = k.permute(1, 0, 2).contiguous()
+        v = v.permute(1, 0, 2).contiguous()
 
         # --> [num_attention_heads, L, d_head], if query seq length == 1,
         # set is_causal to False to avoid attention mask construction to save computation
-        output = scaled_dot_product_attention_GQA(q, k, v, is_causal=q.shape[-2] > 1)
+        output = scaled_dot_product_attention_GQA(q, k, v, is_causal=q.shape[1] > 1)
         # [num_attention_heads, L, d_head] --> [L, num_attention_heads, d_head] --> [L, D]
-        output = output.permute(2, 1, 3).reshape(seq_len, -1)
+        output = output.permute(1, 0, 2).reshape(seq_len, -1)
 
         # [L, D] --> [L, D]
         return self.o_proj(output)
