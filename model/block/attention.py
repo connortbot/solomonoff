@@ -94,9 +94,28 @@ def scaled_dot_product_attention_GQA(query: torch.Tensor, key: torch.Tensor, val
         return output
 
 
-class MultiHeadAttention(nn.Module):
-    def __init__(self):
-        pass
+class SelfAttention(nn.Module):
+    def __init__(self, args: TransformerArgs):
+        super().__init__()
+        self.args = args
+
+        self.num_attention_heads = args.num_attention_heads
+        self.num_key_value_heads = args.num_key_value_heads
+        if self.n_kv_heads is None:
+            self.n_kv_heads = self.n_heads
+        self.d_head = args.hidden_size // args.num_attention_heads
+
+        bias = False # for llama
+
+        self.q_proj = nn.Linear(args.hidden_size, self.num_attention_heads * self.d_head, bias=bias)
+        self.k_proj = nn.Linear(args.hidden_size, self.num_key_value_heads * self.d_head, bias=bias)
+        self.v_proj = nn.Linear(args.hidden_size, self.num_key_value_heads * self.d_head, bias=bias)
+
+        # self.kv_cache = KVCache(
+        #     max_batch_size=args.max_batch_size,
+        #     max_seq_len=args.max_seq_len,
+        #     n_kv_heads=self.n_kv_heads,
+        #     d_head=self.d_head,
 
 if __name__ == "__main__":
     pass
