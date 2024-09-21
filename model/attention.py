@@ -15,7 +15,7 @@ import torch.nn.functional as F
 import sys
 from pathlib import Path
 
-# Move up one directory level (parent of the current file's folder)
+# move up one directory level
 sys.path.append(str(Path(__file__).parent.parent))
 
 # Now you can import from the sister folder
