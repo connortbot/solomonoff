@@ -116,6 +116,8 @@ class SelfAttention(nn.Module):
         #     max_seq_len=args.max_seq_len,
         #     n_kv_heads=self.n_kv_heads,
         #     d_head=self.d_head,
+        # )
+        # self.rope = RoPE(args)
 
 if __name__ == "__main__":
     pass
