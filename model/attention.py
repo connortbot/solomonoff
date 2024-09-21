@@ -18,7 +18,7 @@ from pathlib import Path
 # move up one directory level
 sys.path.append(str(Path(__file__).parent.parent))
 
-# Now you can import from the sister folder
+
 from helpers.transformer_args import TransformerArgs
 
 def scaled_dot_product_attention_GQA(query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, **kwargs):
