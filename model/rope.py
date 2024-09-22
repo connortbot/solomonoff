@@ -74,8 +74,14 @@ class RoPE(nn.Module):
         x = x.reshape(L, H, 2, -1).transpose(-1, -2).contiguous().float()
         # Convert to complex numbers: [L, H, rope_hidden_size//2]
         x_complex = torch.view_as_complex(x)
+        
         # Select frequencies for current positions: [L, rope_hidden_size//2]
-        f_complex = self.freqs_complex[start_index : start_index + L].view(L, 1)
+        #f_complex = self.freqs_complex[start_index : start_index + L].view(L, 1)
+
+        # this passed the first unit test but unsure if correct
+        f_complex = self.freqs_complex[start_index : start_index + L].view(L, 1, -1)
+
+
         # Apply rotations: [L, 1] * [L, H, rope_hidden_size//2] -> [L, H, rope_hidden_size//2]
         x_rotated = f_complex * x_complex
         # Convert back to real numbers: [L, H, rope_hidden_size//2, 2]
@@ -103,8 +109,3 @@ class RoPE(nn.Module):
         # Complex exponentials: [max_seq_len, rope_hidden_size//2]
         freqs_complex = torch.polar(torch.ones_like(freqs), freqs)
         return freqs_complex
-
-
-
-if __name__ == "__main__":
-    pass
