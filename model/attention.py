@@ -12,6 +12,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from rope import RoPE
+
 import sys
 from pathlib import Path
 
@@ -125,7 +127,7 @@ class SelfAttention(nn.Module):
             n_kv_heads=self.num_key_value_heads,
             d_head=self.d_head,
         )
-        # self.rope = RoPE(args)
+        self.rope = RoPE(args)
     
     def forward(self, x: torch.Tensor, start_index: int) -> torch.Tensor:
         seq_len, _ = x.shape
@@ -139,14 +141,15 @@ class SelfAttention(nn.Module):
         k: torch.Tensor = self.k_proj(x)
         v: torch.Tensor = self.v_proj(x)
 
-        # [B, L, D] --> [B, L, n_heads, d_head]
+        # [L, D] --> [L, n_heads, d_head], or [L, H, D]
         q = q.view(seq_len, self.num_attention_heads, self.d_head)
         k = k.view(seq_len, self.num_key_value_heads, self.d_head)
         v = v.view(seq_len, self.num_key_value_heads, self.d_head)
 
         # apply rotary position embedding
-        # q = self.rope(q, start_index)
-        # k = self.rope(k, start_index)
+        # [L, H, D] -> [L, H, D]
+        q = self.rope(q, start_index)
+        k = self.rope(k, start_index)
 
         # write new key and new value into the kv cache
         self.kv_cache(k, v)

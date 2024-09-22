@@ -13,8 +13,14 @@ class TransformerArgs():
 
         hidden_size: int = -1,
         max_seq_len: int = 2048, # tinyllamas max length
+        
+        # Attention
         num_attention_heads: int = -1,
-        num_key_value_heads: int = -1
+        num_key_value_heads: int = -1,
+
+        # RoPe
+        rope_theta: float = 10000.0,
+        rope_partial_factor = None
     ):
         self.llm_type = llm_type
         self.hidden_size = hidden_size
