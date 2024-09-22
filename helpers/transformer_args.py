@@ -27,3 +27,5 @@ class TransformerArgs():
         self.max_seq_len = max_seq_len
         self.num_attention_heads = num_attention_heads
         self.num_key_value_heads = num_key_value_heads
+        self.rope_theta = rope_theta
+        self.rope_partial_factor = rope_partial_factor

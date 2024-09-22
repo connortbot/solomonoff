@@ -4,6 +4,9 @@ Filename: rope.py
 Description: Implements rotary embeddings RoPE
 
 Notes:
+Needs double checking:
+f_complex = self.freqs_complex[start_index : start_index + L].view(L, 1) is probably wrong.
+I did a unit test and I don't think the dimensions are right because it tries reshaping from [2,2] to [2,1] for example
 
 """
 
@@ -26,10 +29,10 @@ class RoPE(nn.Module):
         self.hidden_size = args.hidden_size // args.num_attention_heads
         self.rope_hidden_size = self.hidden_size
         if args.rope_partial_factor is not None:
-            self.rope_dim = int(args.rope_partial_factor * self.dim)
-        assert self.rope_dim % 2 == 0, f"Dim ({self.rope_dim}) must be divisible by 2"
+            self.rope_hidden_size = int(args.rope_partial_factor * self.hidden_size)
+        assert self.rope_hidden_size % 2 == 0, f"Hidden Size ({self.rope_hidden_size}) must be divisible by 2"
 
-        # complex freqs of shape: [max_seq_len, rope_dim//2]
+        # complex freqs of shape: [max_seq_len, rope_hidden_size//2]
         freqs_complex: torch.Tensor = self._precompute_inv_freq()
         self.register_buffer("freqs_complex", freqs_complex, persistent=False)
     
@@ -44,14 +47,14 @@ class RoPE(nn.Module):
         Returns:
             Tensor of shape [L, H, D] with RoPE applied
         """
-        assert x.ndim == 3 and x.shape[-1] == self.dim, f"Expected input shape [L, H, {self.dim}], got {x.shape}"
+        assert x.ndim == 3 and x.shape[-1] == self.hidden_size, f"Expected input shape [L, H, {self.hidden_size}], got {x.shape}"
         L, H, _ = x.shape
         assert start_index + L <= self.max_seq_len, "Sequence length with start_index exceeds max_seq_len"
-        if self.dim == self.rope_dim:
+        if self.hidden_size == self.rope_hidden_size:
             return self._forward(x, start_index)
         else:
-            # Apply RoPE to the first rope_dim dimensions, leave the rest untouched
-            x_rope, x_pass = x[..., :self.rope_dim].contiguous(), x[..., self.rope_dim:]
+            # Apply RoPE to the first rope_hidden_size dimensions, leave the rest untouched
+            x_rope, x_pass = x[..., :self.rope_hidden_size].contiguous(), x[..., self.rope_hidden_size:]
             x_rope = self._forward(x_rope, start_index)
             return torch.cat([x_rope, x_pass], dim=-1)
     
@@ -60,46 +63,47 @@ class RoPE(nn.Module):
         Internal method to apply RoPE to the input tensor.
 
         Args:
-            x: Tensor of shape [L, H, rope_dim]
+            x: Tensor of shape [L, H, rope_hidden_size]
             start_index: Starting position index for applying RoPE
 
         Returns:
-            Tensor of shape [L, H, rope_dim] with RoPE applied
+            Tensor of shape [L, H, rope_hidden_size] with RoPE applied
         """
-        L, H, rope_dim = x.shape
-        # Reshape to [L, H, 2, rope_dim//2]
+        L, H, rope_hidden_size = x.shape
+        # Reshape to [L, H, 2, rope_hidden_size//2]
         x = x.reshape(L, H, 2, -1).transpose(-1, -2).contiguous().float()
-        # Convert to complex numbers: [L, H, rope_dim//2]
+        # Convert to complex numbers: [L, H, rope_hidden_size//2]
         x_complex = torch.view_as_complex(x)
-        # Select frequencies for current positions: [L, rope_dim//2]
+        # Select frequencies for current positions: [L, rope_hidden_size//2]
         f_complex = self.freqs_complex[start_index : start_index + L].view(L, 1)
-        # Apply rotations: [L, 1] * [L, H, rope_dim//2] -> [L, H, rope_dim//2]
+        # Apply rotations: [L, 1] * [L, H, rope_hidden_size//2] -> [L, H, rope_hidden_size//2]
         x_rotated = f_complex * x_complex
-        # Convert back to real numbers: [L, H, rope_dim//2, 2]
+        # Convert back to real numbers: [L, H, rope_hidden_size//2, 2]
         x_rotated = torch.view_as_real(x_rotated).transpose(-1, -2)
-        # Reshape back to [L, H, rope_dim]
-        return x_rotated.reshape(L, H, rope_dim).type_as(x)
+        # Reshape back to [L, H, rope_hidden_size]
+        return x_rotated.reshape(L, H, rope_hidden_size).type_as(x)
     
     def _precompute_inv_freq(self) -> torch.Tensor:
         """
         Precomputes the inverse frequencies used for RoPE.
 
         Returns:
-            Tensor of shape [max_seq_len, rope_dim//2] containing complex frequencies
+            Tensor of shape [max_seq_len, rope_hidden_size//2] containing complex frequencies
         """
 
         dtype = torch.float32
-        # Indices for frequency calculation: [0, 2, 4, ..., rope_dim-2]
-        i = torch.arange(0, self.rope_dim, 2, dtype=dtype)
-        # Inverse frequencies: [rope_dim//2]
-        inv_freq = self.inv_theta ** (i / self.rope_dim)
+        # Indices for frequency calculation: [0, 2, 4, ..., rope_hidden_size-2]
+        i = torch.arange(0, self.rope_hidden_size, 2, dtype=dtype)
+        # Inverse frequencies: [rope_hidden_size//2]
+        inv_freq = self.inv_theta ** (i / self.rope_hidden_size)
         # Positions: [max_seq_len]
         t = torch.arange(0, self.max_seq_len, dtype=dtype)
-        # Outer product: [max_seq_len, rope_dim//2]
+        # Outer product: [max_seq_len, rope_hidden_size//2]
         freqs = torch.einsum("i,j->ij", t, inv_freq)
-        # Complex exponentials: [max_seq_len, rope_dim//2]
+        # Complex exponentials: [max_seq_len, rope_hidden_size//2]
         freqs_complex = torch.polar(torch.ones_like(freqs), freqs)
         return freqs_complex
+
 
 
 if __name__ == "__main__":
