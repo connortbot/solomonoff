@@ -23,7 +23,10 @@ class TransformerArgs():
         rope_partial_factor = None,
 
         # Norm
-        rms_norm_eps: float = 1e-5
+        rms_norm_eps: float = 1e-5,
+
+        # Feed Forward
+        intermediate_size: int = -1
     ):
         self.llm_type = llm_type
         self.hidden_size = hidden_size
@@ -33,3 +36,4 @@ class TransformerArgs():
         self.rope_theta = rope_theta
         self.rope_partial_factor = rope_partial_factor
         self.rms_norm_eps = rms_norm_eps
+        self.intermediate_size = intermediate_size
