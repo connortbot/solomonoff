@@ -74,18 +74,24 @@ class CausalLM(nn.Module):
         self.start_index += L
         return logits
     
-    # @staticmethod
-    # def from_pretrained(
-    #     model_dir: Path,
-    #     model_args: TransformerArgs,
-    #     strict=True,
-    # ) -> "CausalLM":
-    #     state_dict: OrderedDict = load_model_state_dict(model_dir)
-    #     if convert_state_dict_fun is not None:
-    #         state_dict = convert_state_dict_fun(state_dict)
-    #     model = CausalLM(model_args)
-    #     model.load_state_dict(state_dict, strict=strict)
-    #     return model
+    @staticmethod
+    def from_pretrained(
+        model_path: str,
+        model_args: TransformerArgs,
+        strict=True,
+    ) -> "CausalLM":
+        state_dict: OrderedDict = load_model(model_path)
+        
+        # For Llama, convert function
+        state_dict_new = OrderedDict()
+        for k, v in state_dict.items():
+            if "rotary_emb" in k:
+                continue
+            state_dict_new[k] = v
+
+        model = CausalLM(model_args)
+        model.load_state_dict(state_dict_new, strict=strict)
+        return model
 
 if __name__ == "__main__":
     model_args = ARGS_MAP["TinyLlama-1.1B-Chat-v1.0"]
