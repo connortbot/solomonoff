@@ -37,3 +37,18 @@ class TransformerArgs():
         self.rope_partial_factor = rope_partial_factor
         self.rms_norm_eps = rms_norm_eps
         self.intermediate_size = intermediate_size
+
+
+ARGS_MAP = {
+    "TinyLlama-1.1B-Chat-v1.0": TransformerArgs(
+        llm_type="llama",
+        # vocab_size=32000,
+        hidden_size=2048,
+        # n_layers=22,
+        num_attention_heads=32,
+        num_key_value_heads=4,
+        intermediate_size=5632,
+        # max_batch_size=1,
+        max_seq_len=2048,
+    )
+}
