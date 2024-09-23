@@ -80,6 +80,13 @@ class RoPE(nn.Module):
             Tensor of shape [L, H, rope_hidden_size] with RoPE applied
         """
         # needs to be implemented!
+        L, H, _ = x.shape
+        x = x.reshape(L, H, 2, -1).transpose(-1, -2).contiguous().float()
+        x_complex = torch.view_as_complex(x)
+        f_complex = self.freqs_complex[start_index : start_index + L].view(L, 1, -1)
+        x_rotated = f_complex * x_complex
+        x_rotated = torch.view_as_real(x_rotated).transpose(-1, -2)
+        return x_rotated.reshape(L, H, -1).type_as(x)
     
     def _precompute_inv_freq(self) -> torch.Tensor:
         """
