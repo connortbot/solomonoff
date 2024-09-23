@@ -23,8 +23,8 @@ Notes:
 2. Positional Encodings/Rotary Embeddings [FINISHED]
 3. Attention Mechanism (Scaled Dot-Product Attention) -> (Multi-Head Attention) [FINISHED]
 - should double check
-4. Layer Normalization
-5. Feed Forward Network
+4. Layer Normalization [FINISHED]
+5. Feed Forward Network [FINISHED]
 6. Transformer Block Class (combines all elements of transformer block)
 7. Output Layer
 8. Softmax (for logits to probabilities)
