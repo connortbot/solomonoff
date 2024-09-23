@@ -20,7 +20,10 @@ class TransformerArgs():
 
         # RoPe
         rope_theta: float = 10000.0,
-        rope_partial_factor = None
+        rope_partial_factor = None,
+
+        # Norm
+        rms_norm_eps: float = 1e-5
     ):
         self.llm_type = llm_type
         self.hidden_size = hidden_size
@@ -29,3 +32,4 @@ class TransformerArgs():
         self.num_key_value_heads = num_key_value_heads
         self.rope_theta = rope_theta
         self.rope_partial_factor = rope_partial_factor
+        self.rms_norm_eps = rms_norm_eps

@@ -1,5 +1,5 @@
 """
-Filename: rope.py
+Filename: test_rope.py
 
 Description: Tests for RoPE implementation
 
@@ -8,7 +8,6 @@ Notes:
 """
 
 import unittest
-import math
 import torch
 
 import sys

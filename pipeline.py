@@ -20,9 +20,9 @@ Notes:
 
 1. Tokenization [FINISHED]
 - decided against external file, will make helpers inside of Pipeline
-2. Positional Encodings/Rotary Embeddings [FINISHED???]
-- RoPE finished, check implementation
+2. Positional Encodings/Rotary Embeddings [FINISHED]
 3. Attention Mechanism (Scaled Dot-Product Attention) -> (Multi-Head Attention) [FINISHED]
+- should double check
 4. Layer Normalization
 5. Feed Forward Network
 6. Transformer Block Class (combines all elements of transformer block)
