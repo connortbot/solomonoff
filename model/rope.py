@@ -94,18 +94,14 @@ class RoPE(nn.Module):
         Precomputes the inverse frequencies used for RoPE.
 
         Returns:
-            Tensor of shape [max_seq_len, rope_hidden_size//2] containing complex frequencies
+            Tensor of shape [max_seq_len, rope_hidden_size//2] containing complex freqs
         """
-
         dtype = torch.float32
-        # Indices for frequency calculation: [0, 2, 4, ..., rope_hidden_size-2]
-        i = torch.arange(0, self.rope_hidden_size, 2, dtype=dtype)
-        # Inverse frequencies: [rope_hidden_size//2]
-        inv_freq = self.inv_theta ** (i / self.rope_hidden_size)
-        # Positions: [max_seq_len]
+        # theta_i = 10000^(-2(i-1)/rope_dim), i = [1, 2, ..., rope_dim/2]
+        i = torch.arange(0, self.rope_dim, 2, dtype=dtype)
+        inv_freq = self.inv_theta ** (i / self.rope_dim)  # shape: [rope_dim/2]
         t = torch.arange(0, self.max_seq_len, dtype=dtype)
-        # Outer product: [max_seq_len, rope_hidden_size//2]
-        freqs = torch.einsum("i,j->ij", t, inv_freq)
-        # Complex exponentials: [max_seq_len, rope_hidden_size//2]
+        freqs = torch.einsum("i,j->ij", t, inv_freq)  # shape: [max_seq_len, dim/2]
+        # --> exp(j * freqs) = cos(freqs) + j * sin(freqs), complex of shape: [max_seq_len, dim/2]
         freqs_complex = torch.polar(torch.ones_like(freqs), freqs)
         return freqs_complex
