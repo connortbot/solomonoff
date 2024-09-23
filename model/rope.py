@@ -47,18 +47,6 @@ class RoPE(nn.Module):
         Returns:
             Tensor of shape [L, H, D] with RoPE applied
         """
-        assert x.ndim == 3 and x.shape[-1] == self.hidden_size, f"Expected input shape [L, H, {self.hidden_size}], got {x.shape}"
-        L, _ , _ = x.shape
-        assert start_index + L <= self.max_seq_len, "Sequence length with start_index exceeds max_seq_len"
-        if self.hidden_size == self.rope_hidden_size:
-            return self._forward(x, start_index)
-        else:
-            # Apply RoPE to the first rope_hidden_size dimensions, leave the rest untouched
-            x_rope, x_pass = x[..., :self.rope_hidden_size].contiguous(), x[..., self.rope_hidden_size:]
-            x_rope = self._forward(x_rope, start_index)
-            return torch.cat([x_rope, x_pass], dim=-1)
-        
-    def forward(self, x: torch.Tensor, start_index: int) -> torch.Tensor:
         assert x.ndim == 3 and x.shape[-1] == self.hidden_size
         L, _, _ = x.shape
         assert start_index + L <= self.max_seq_len
@@ -79,7 +67,6 @@ class RoPE(nn.Module):
         Returns:
             Tensor of shape [L, H, rope_hidden_size] with RoPE applied
         """
-        # needs to be implemented!
         L, H, _ = x.shape
         x = x.reshape(L, H, 2, -1).transpose(-1, -2).contiguous().float()
         x_complex = torch.view_as_complex(x)
@@ -104,3 +91,16 @@ class RoPE(nn.Module):
         # --> exp(j * freqs) = cos(freqs) + j * sin(freqs), complex of shape: [max_seq_len, dim/2]
         freqs_complex = torch.polar(torch.ones_like(freqs), freqs)
         return freqs_complex
+    
+if __name__ == "__main__":
+    # Example Usage
+    torch.random.manual_seed(0)
+
+    args = TransformerArgs(hidden_size=128, num_attention_heads=4, max_seq_len=15, rope_partial_factor=0.5)
+
+    rope = RoPE(args)
+
+    x = torch.randn(10, 4, 128 // 4)
+    y1 = rope(x, 0)
+
+    assert x.shape == y1.shape # test [L, H, D // H] -> [L, H, D // H]

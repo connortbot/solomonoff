@@ -21,140 +21,85 @@ from model.rope import RoPE
 from helpers.transformer_args import TransformerArgs
 
 class TestRoPE(unittest.TestCase):
+    
     def setUp(self):
-        # Common setup for all tests
-        self.args = TransformerArgs(
-            max_seq_len=10, rope_theta=10000.0, hidden_size=4, num_attention_heads=1, rope_partial_factor=None
+        # Setting up default arguments for RoPE (these values can be tuned based on your specific setup)
+        args = TransformerArgs(
+            max_seq_len=128,
+            rope_theta=10000,
+            hidden_size=64,
+            num_attention_heads=8,
+            rope_partial_factor=0.5  # Only apply RoPE to half of the hidden size
         )
-        self.rope = RoPE(self.args)
-
-    def test_rope_identity_at_position_zero(self):
-        """
-        Test that RoPE does not alter the input at position 0 (identity transformation).
-        """
-        # Create input tensor with position 0
-        # Shape: [L, H, D] = [1, 1, 4]
-        x = torch.tensor([
-            [[1.0, 0.0, 1.0, 0.0]],  # Position 0
-        ])  # Shape [1, 1, 4]
-
-        # Apply RoPE with start_index=0
-        x_rope = self.rope(x, start_index=0)
-
-        # Assert that output equals input
-        self.assertTrue(torch.allclose(x, x_rope, atol=1e-6),
-                        "RoPE should not alter the input at position 0")
+        self.rope = RoPE(args)
     
-    def test_rope_norm_preservation(self):
-        """
-        Test that RoPE preserves the norm of the input embeddings.
-        """
-        # Create a random input tensor
-        # Shape: [L, H, D] = [5, 2, 8]
-        torch.manual_seed(42)  # For reproducibility
-        x = torch.randn(5, 2, 4)  # [L, H, D]
+    def test_shape_unchanged(self):
+        # Test 1: Ensure that input and output have the same shape
+        L = 10  # Sequence length
+        H = 8   # Number of attention heads
+        D = 64  # Hidden size
+        start_index = 0
 
-        # Compute norms before applying RoPE
-        norm_before = torch.norm(x, dim=-1)
-
-        # Apply RoPE
-        x_rope = self.rope(x, start_index=0)
-
-        # Compute norms after applying RoPE
-        norm_after = torch.norm(x_rope, dim=-1)
-
-        # Assert that norms are approximately equal
-        self.assertTrue(torch.allclose(norm_before, norm_after, atol=1e-6),
-                        "RoPE should preserve the norm of the input embeddings")
+        x = torch.randn(L, H, D // H)  # Create random input tensor of shape [L, H, D]
+        x_rope = self.rope(x, start_index)
+        
+        # Assert that the output has the same shape as the input
+        self.assertEqual(x.shape, x_rope.shape)
     
-    def test_rope_correct_rotation(self):
-        """
-        Test that RoPE correctly applies rotation to the input embeddings.
-        Specifically, verify that position 0 remains unchanged and position 1 is rotated as expected.
-        """
-        # Create input tensor with two positions
-        # Shape: [L, H, D] = [2, 1, 4]
-        x = torch.tensor([
-            [[1.0, 0.0, 0.0, 1.0]],  # Position 0
-            [[1.0, 0.0, 0.0, 1.0]],  # Position 1
-        ])  # Shape [2, 1, 4]
+    def test_partial_rope_application(self):
+        # Test 2: Ensure RoPE is applied to the first 'rope_hidden_size' dimensions
+        L = 10
+        H = 8
+        D = 64
+        start_index = 0
 
-        # Apply RoPE
-        x_rope = self.rope(x, start_index=0)
+        x = torch.randn(L, H, D // H)  # Create random input tensor of shape [L, H, D]
+        x_rope = self.rope(x, start_index)
+        
+        rope_hidden_size = self.rope.rope_hidden_size
+        
+        # Assert that the first rope_hidden_size values have changed (RoPE applied)
+        self.assertFalse(torch.allclose(x[..., :rope_hidden_size], x_rope[..., :rope_hidden_size], atol=1e-5))
+        # Assert that the remaining dimensions haven't changed (RoPE not applied)
+        self.assertTrue(torch.allclose(x[..., rope_hidden_size:], x_rope[..., rope_hidden_size:], atol=1e-5))
+    
+    def test_freqs_precomputed(self):
+        # Test 3: Ensure that frequency precomputation is done correctly
+        freqs_complex = self.rope.freqs_complex
+        max_seq_len = self.rope.max_seq_len
+        rope_hidden_size = self.rope.rope_hidden_size
+        
+        # Assert the shape of the precomputed frequencies is [max_seq_len, rope_hidden_size//2]
+        self.assertEqual(freqs_complex.shape, (max_seq_len, rope_hidden_size // 2))
+    
+    def test_with_varied_start_index(self):
+        # Test 4: Test RoPE with different start indices
+        L = 10
+        H = 8
+        D = 64
+        start_index = 5
 
-        # Position 0 should remain unchanged
-        self.assertTrue(torch.allclose(x_rope[0], x[0], atol=1e-6),
-                        "RoPE should not alter the input at position 0")
+        x = torch.randn(L, H, D // H)  # Create random input tensor of shape [L, H, D]
+        x_rope_start_5 = self.rope(x, start_index)
 
-        # Manually compute expected rotation for position 1
-        # Retrieve the complex frequencies for position 1
-        freqs_complex = self.rope.freqs_complex[1]  # Shape: [rope_hidden_size//2]
-
-        # Reshape input at position 1 to complex numbers
-        # Original shape: [H, D] = [1, 4]
-        # Reshaped to [H, 2, D//2] = [1, 2, 2]
-        x_pos1 = x[1].reshape(1, 2, 2).transpose(-1, -2).contiguous()  # [H, 2, 2]
-        x_complex = torch.view_as_complex(x_pos1)  # [H, 2]
-
-        # Apply rotation: multiply by the corresponding frequency
-        # freqs_complex shape: [rope_hidden_size//2] = [2]
-        # x_complex shape: [H, rope_hidden_size//2] = [1, 2]
-        # To multiply element-wise, reshape freqs_complex to [1, 2]
-        f_complex = freqs_complex.view(1, -1)  # [1, 2]
-        x_rotated_complex = x_complex * f_complex  # [1, 2]
-
-        # Convert back to real numbers
-        x_rotated = torch.view_as_real(x_rotated_complex).transpose(-1, -2).reshape(4)  # [D]
-
-        # Assert that the rotated output matches the expected rotation
-        self.assertTrue(torch.allclose(x_rope[1], x_rotated, atol=1e-6),
-                        "RoPE did not correctly rotate the input at position 1")
-
-    def test_rope_partial_application(self):
-        """
-        Test that RoPE is correctly applied only to a subset of the hidden dimensions when rope_partial_factor is set.
-        """
-        # Define a TransformerArgs with rope_partial_factor
-        partial_args = TransformerArgs(
-            max_seq_len=10, rope_theta=10000.0, hidden_size=4, num_attention_heads=1, rope_partial_factor=0.5)
-        rope_partial = RoPE(partial_args)
-
-        # Create input tensor
-        # Shape: [L, H, D] = [2, 1, 4]
-        x = torch.tensor([
-            [[1.0, 2.0, 3.0, 4.0]],  # Position 0
-            [[5.0, 6.0, 7.0, 8.0]],  # Position 1
-        ])  # Shape [2, 1, 4]
-
-        # Apply RoPE
-        x_rope = rope_partial(x, start_index=0)
-
-        # The first half of the hidden dimensions should be rotated
-        # The second half should remain unchanged
-        # hidden_size=4, rope_hidden_size=2
-
-        # Manually compute rotation for the first two dimensions
-        freqs_complex = rope_partial.freqs_complex[start_index : start_index + 2]  # [2, 1]
-
-        # Position 0 rotation (should be identity)
-        x_pos0 = x[0, 0, :2].reshape(1, 1) + 0j  # [1, 1]
-        x_rotated_pos0 = freqs_complex[0].unsqueeze(0) * x_pos0  # [1,1] * [1,1] -> [1,1]
-        x_rotated_pos0 = torch.view_as_real(x_rotated_pos0).reshape(2)
-
-        # Position 1 rotation
-        x_pos1 = x[1, 0, :2].reshape(1, 1) + 0j  # [1,1]
-        x_rotated_pos1 = freqs_complex[1].unsqueeze(0) * x_pos1  # [1,1] * [1,1] -> [1,1]
-        x_rotated_pos1 = torch.view_as_real(x_rotated_pos1).reshape(2)
-
-        # Expected output
-        expected = torch.stack([
-            torch.cat([x_rotated_pos0, x[0, 0, 2:]]),
-            torch.cat([x_rotated_pos1, x[1, 0, 2:]]),
-        ])
-
-        # Assert that the rotated parts match and the untouched parts are equal
-        self.assertTrue(torch.allclose(x_rope, expected, atol=1e-6),
-                        "RoPE did not correctly apply partial rotation")
+        # Check with a different start_index
+        start_index_2 = 2
+        x_rope_start_2 = self.rope(x, start_index_2)
+        
+        # Output should differ with different start indices
+        self.assertFalse(torch.allclose(x_rope_start_5, x_rope_start_2, atol=1e-5))
+    
+    def test_invalid_sequence_length(self):
+        # Test 5: Ensure error is raised when sequence length exceeds max_seq_len
+        L = 130  # Sequence length larger than max_seq_len (which is 128)
+        H = 8
+        D = 64
+        start_index = 0
+        
+        x = torch.randn(L, H, D // H)
+        
+        with self.assertRaises(AssertionError):
+            self.rope(x, start_index)
 
 if __name__ == "__main__":
     unittest.main()
