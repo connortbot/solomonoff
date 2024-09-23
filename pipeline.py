@@ -27,14 +27,14 @@ Notes:
 4. Layer Normalization [FINISHED]
 5. Feed Forward Network [FINISHED]
 6. Transformer Block Class (combines all elements of transformer block) [FINISHED]
-7. Output Layer
-8. Softmax (for logits to probabilities)
-9. Greedy Decoding
-10. Positional Masking (?)
+7. Positional Masking (?)
 - fairly sure this is done in Attention already
-11. Token Decoding
-11. Finished CausalLM 
-12. Pipeline
+8. CausalLM
+- Includes output layer
+- and embedding layer
+11. Greedy Decoding
+12. Token Decoding
+13. Pipeline
 
 ??????????????????????????????????????????????????
 """
