@@ -11,6 +11,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from model.attention import SelfAttention
+from model.norm import RMSNorm
+from model.feedforward import FeedForward
+
 import sys
 from pathlib import Path
 
@@ -19,10 +23,6 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 
 from helpers.transformer_args import TransformerArgs
-
-from attention import SelfAttention
-from norm import RMSNorm
-from feedforward import FeedForward
 
 class TransformerBlock(nn.Module):
     def __init__(self, args: TransformerArgs):
