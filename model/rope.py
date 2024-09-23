@@ -62,7 +62,7 @@ class RoPE(nn.Module):
         assert x.ndim == 3 and x.shape[-1] == self.hidden_size
         L, _, _ = x.shape
         assert start_index + L <= self.max_seq_len
-        if self.dim == self.rope_hidden_size:
+        if self.hidden_size == self.rope_hidden_size:
             return self._forward(x, start_index)
         x, x_pass = x[..., : self.rope_hidden_size].contiguous(), x[..., self.rope_hidden_size :]
         x = self._forward(x, start_index)
