@@ -99,7 +99,7 @@ class RoPE(nn.Module):
         dtype = torch.float32
         # theta_i = 10000^(-2(i-1)/rope_dim), i = [1, 2, ..., rope_dim/2]
         i = torch.arange(0, self.rope_hidden_size, 2, dtype=dtype)
-        inv_freq = self.inv_theta ** (i / self.rope_hidden_size,)  # shape: [rope_dim/2]
+        inv_freq = self.inv_theta ** (i / self.rope_hidden_size)  # shape: [rope_dim/2]
         t = torch.arange(0, self.max_seq_len, dtype=dtype)
         freqs = torch.einsum("i,j->ij", t, inv_freq)  # shape: [max_seq_len, dim/2]
         # --> exp(j * freqs) = cos(freqs) + j * sin(freqs), complex of shape: [max_seq_len, dim/2]
