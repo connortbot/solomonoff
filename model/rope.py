@@ -79,25 +79,7 @@ class RoPE(nn.Module):
         Returns:
             Tensor of shape [L, H, rope_hidden_size] with RoPE applied
         """
-        L, H, rope_hidden_size = x.shape
-        # Reshape to [L, H, 2, rope_hidden_size//2]
-        x = x.reshape(L, H, 2, -1).transpose(-1, -2).contiguous().float()
-        # Convert to complex numbers: [L, H, rope_hidden_size//2]
-        x_complex = torch.view_as_complex(x)
-        
-        # Select frequencies for current positions: [L, rope_hidden_size//2]
-        #f_complex = self.freqs_complex[start_index : start_index + L].view(L, 1)
-
-        # this passed the first unit test but unsure if correct
-        f_complex = self.freqs_complex[start_index : start_index + L].view(L, 1, -1)
-
-
-        # Apply rotations: [L, 1] * [L, H, rope_hidden_size//2] -> [L, H, rope_hidden_size//2]
-        x_rotated = f_complex * x_complex
-        # Convert back to real numbers: [L, H, rope_hidden_size//2, 2]
-        x_rotated = torch.view_as_real(x_rotated).transpose(-1, -2)
-        # Reshape back to [L, H, rope_hidden_size]
-        return x_rotated.reshape(L, H, rope_hidden_size).type_as(x)
+        # needs to be implemented!
     
     def _precompute_inv_freq(self) -> torch.Tensor:
         """
