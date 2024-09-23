@@ -115,7 +115,8 @@ class TestRoPE(unittest.TestCase):
         Test that RoPE is correctly applied only to a subset of the hidden dimensions when rope_partial_factor is set.
         """
         # Define a TransformerArgs with rope_partial_factor
-        partial_args = TransformerArgs(rope_partial_factor=0.5)
+        partial_args = TransformerArgs(
+            max_seq_len=10, rope_theta=10000.0, hidden_size=4, num_attention_heads=1, rope_partial_factor=0.5)
         rope_partial = RoPE(partial_args)
 
         # Create input tensor
