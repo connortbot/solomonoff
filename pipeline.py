@@ -30,6 +30,7 @@ Notes:
 8. Softmax (for logits to probabilities)
 9. Greedy Decoding
 10. Positional Masking (?)
+- fairly sure this is done in Attention already
 11. Token Decoding
 11. Finished CausalLM 
 12. Pipeline
