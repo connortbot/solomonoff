@@ -1,3 +1,12 @@
+"""
+Filename: samplers.py
+
+Description: ???
+
+Notes:
+
+"""
+
 import torch
 import torch.nn.functional as F
 
@@ -26,7 +35,7 @@ class SamplerBase:
     @torch.inference_mode()
     def sample_index_from_logits(self, logits: torch.Tensor, keepdim=False) -> torch.Tensor:
         p = self.logits_to_probs(logits)
-        return self.sample_index(p, keepdim=keepdim)
+        return self.sample_index(p, keepdim=keepdim) # does not call greedy decode, should it?
 
     @torch.inference_mode()
     def sample_index(self, p: torch.Tensor, keepdim=False) -> torch.Tensor:
