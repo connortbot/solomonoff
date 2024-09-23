@@ -32,7 +32,7 @@ Notes:
 8. CausalLM
 - Includes output layer
 - and embedding layer
-11. Greedy Decoding
+11. Greedy Decoding [FINISHED]
 12. Token Decoding
 13. Pipeline
 
