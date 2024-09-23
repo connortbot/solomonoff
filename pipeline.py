@@ -21,11 +21,12 @@ Notes:
 1. Tokenization [FINISHED]
 - decided against external file, will make helpers inside of Pipeline
 2. Positional Encodings/Rotary Embeddings [FINISHED]
+- only RoPE done, not flat embeddings
 3. Attention Mechanism (Scaled Dot-Product Attention) -> (Multi-Head Attention) [FINISHED]
 - should double check
 4. Layer Normalization [FINISHED]
 5. Feed Forward Network [FINISHED]
-6. Transformer Block Class (combines all elements of transformer block)
+6. Transformer Block Class (combines all elements of transformer block) [FINISHED]
 7. Output Layer
 8. Softmax (for logits to probabilities)
 9. Greedy Decoding
