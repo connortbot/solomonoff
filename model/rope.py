@@ -57,6 +57,16 @@ class RoPE(nn.Module):
             x_rope, x_pass = x[..., :self.rope_hidden_size].contiguous(), x[..., self.rope_hidden_size:]
             x_rope = self._forward(x_rope, start_index)
             return torch.cat([x_rope, x_pass], dim=-1)
+        
+    def forward(self, x: torch.Tensor, start_index: int) -> torch.Tensor:
+        assert x.ndim == 3 and x.shape[-1] == self.hidden_size
+        L, _, _ = x.shape
+        assert start_index + L <= self.max_seq_len
+        if self.dim == self.rope_hidden_size:
+            return self._forward(x, start_index)
+        x, x_pass = x[..., : self.rope_hidden_size].contiguous(), x[..., self.rope_hidden_size :]
+        x = self._forward(x, start_index)
+        return torch.cat([x, x_pass], dim=-1)
     
     def _forward(self, x: torch.Tensor, start_index: int) -> torch.Tensor:
         """
