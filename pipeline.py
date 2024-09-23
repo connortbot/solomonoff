@@ -29,7 +29,7 @@ Notes:
 6. Transformer Block Class (combines all elements of transformer block) [FINISHED]
 7. Positional Masking (?)
 - fairly sure this is done in Attention already
-8. CausalLM
+8. CausalLM [FINISHED]
 - Includes output layer
 - and embedding layer
 11. Greedy Decoding [FINISHED]
