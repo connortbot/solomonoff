@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from rope import RoPE
+from model.rope import RoPE
 
 import sys
 from pathlib import Path
@@ -110,8 +110,8 @@ class SelfAttention(nn.Module):
 
         self.num_attention_heads = args.num_attention_heads
         self.num_key_value_heads = args.num_key_value_heads
-        if self.n_kv_heads is None:
-            self.n_kv_heads = self.n_heads
+        if self.num_key_value_heads is None:
+            self.num_key_value_heads = self.num_attention_heads
         self.d_head = args.hidden_size // args.num_attention_heads
 
         bias = False # for llama

@@ -27,7 +27,8 @@ if __name__ == "__main__":
     try:
         tinyllama_state_dict = load_model(tinyllama_path)
         print(f"Successfully loaded state dictionary from {tinyllama_path}")
-        for key in list(tinyllama_state_dict.keys())[:10]:
-            print(f"{key}: {tinyllama_state_dict[key].shape}")
+        with open("./files/safetensors-structure.txt", "w") as f:
+            for key in list(tinyllama_state_dict.keys()):
+                f.write(f"{key}: {tinyllama_state_dict[key].shape}\n")
     except Exception as e:
         print(f"Error: {e}")
