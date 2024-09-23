@@ -77,7 +77,7 @@ class Pipeline():
         # config = None, (config for users, paramsl like tmep, etc.)
         device: torch.device = None,
     ):
-        prompt = self._preprocess(prompt, history=history)
+        prompt = self._preprocess(prompt, history)
 
         input_token_ids = self._tokenize_encode(prompt)
 
@@ -98,6 +98,20 @@ class Pipeline():
             eos_token_id=self.tokenizer.eos_token_id,
         ):
             yield construct_output(out)
+    
+    def _preprocess(self, prompt: str, history=None, system_prompt=None) -> str:
+        user_prompt = prompt.strip()
+        sys_prompt = "You are a chatbot who can help answer questions."
+        if system_prompt is not None:
+            sys_prompt = system_prompt.strip()
+        if history is None or len(history) == 0:
+            return f"<|system|>\n{sys_prompt}</s>\n<|user|>\n{user_prompt}</s>\n<|assistant|>\n"
+        prompt = f"<|system|>\n{sys_prompt}</s>\n"
+        for _, (u, r) in enumerate(history):
+            prompt += f"<|user|>\n{u}</s>\n<|assistant|>\n{r}</s>\n"
+        prompt += f"<|user|>\n{user_prompt}</s>\n<|assistant|>\n"
+        return prompt
+
 
 
 @torch.inference_mode()
@@ -152,13 +166,13 @@ def autoregressive_decode_yield(
             new_probs.append(new_prob)
         else:
             new_token = sampler.sample_index_from_logits(logits[:, -1])
-            new_tokens.append(new_token)
+            # new_tokens.append(new_token)
+            new_tokens.append(new_token.unsqueeze(0)) 
         if eos_token_id is not None and new_token.item() == eos_token_id:
             break
         curr_token = new_token
         yield get_return(new_tokens, new_probs)
     yield get_return(new_tokens, new_probs)
-
 
 def get_clear_command():
     os_name = platform.system()
@@ -201,11 +215,8 @@ if __name__ == "__main__":
     prompt = prompts[0]
 
     history = []
-    count = 0
     for out, response in pipeline._generate(
             prompt, history=history, device="cpu"
         ):
-            count += 1
-            if count % 1 == 0:
-                os.system(get_clear_command())
-                print(out, flush=True)
+            os.system(get_clear_command())
+            print(out, flush=True)

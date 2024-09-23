@@ -61,8 +61,10 @@ class CausalLM(nn.Module):
         self.start_index = start_index
     
     def forward(self, tokens: torch.Tensor) -> torch.Tensor:
-        assert tokens.ndim == 1 # no batching, shape [L]
-        L = tokens.shape
+        assert tokens.ndim <= 1 # no batching, shape [L]
+        while tokens.ndim < 1:
+            tokens = tokens.unsqueeze(0)
+        L = tokens.shape[0]
 
         h = self.model["embed_tokens"](tokens)  # [L] --> [L, D]
         for layer in self.model["layers"]:
