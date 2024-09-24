@@ -54,6 +54,7 @@ Here he is explaining George Washington!
 
 ### Sampling
 - [X] Temperature
+- [X] Greedy 
 - [X] top_k
 - [ ] top_p
 - [ ] beam search
