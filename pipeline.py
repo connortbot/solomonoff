@@ -94,7 +94,7 @@ class Pipeline():
             self.model,
             input_token_ids,
             sampler,
-            100, # max_length of response
+            2048, # max_length of response for TinyLlama
             eos_token_id=self.tokenizer.eos_token_id,
         ):
             yield construct_output(out)
@@ -165,9 +165,9 @@ def autoregressive_decode_yield(
             new_tokens.append(new_token)
             new_probs.append(new_prob)
         else:
-            new_token = sampler.sample_index_from_logits(logits[:, -1])
-            # new_tokens.append(new_token)
-            new_tokens.append(new_token.unsqueeze(0)) 
+            # we don't need to take [:, -1] of logits because logits is already [1, vocab_size]
+            new_token = sampler.sample_index_from_logits(logits) # pass in shape of [1, vocab_size]
+            new_tokens.append(new_token)
         if eos_token_id is not None and new_token.item() == eos_token_id:
             break
         curr_token = new_token
@@ -210,9 +210,11 @@ if __name__ == "__main__":
     )
 
     prompts = [
-        "I don't know why, I'm struggling to maintain focus while studying. Any suggestions?"
+        "I don't know why, I'm struggling to maintain focus while studying. Any suggestions?",
+        "How do I grow hair?",
+        "I have a startup called Detox Dot. What do I do to make it successful?"
     ]
-    prompt = prompts[0]
+    prompt = prompts[2]
 
     history = []
     for out, response in pipeline._generate(
