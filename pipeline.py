@@ -209,7 +209,7 @@ if __name__ == "__main__":
         model_name="TinyLlama-1.1B-Chat-v1.0", # not used
     )
 
-    prompt = "Tell me about George Washington."
+    prompt = input("Hi! I'm Solomonoff, How can I help? ")
 
     history = []
     for out, response in pipeline._generate(
