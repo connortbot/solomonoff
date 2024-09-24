@@ -105,11 +105,11 @@ class Pipeline():
         if system_prompt is not None:
             sys_prompt = system_prompt.strip()
         if history is None or len(history) == 0:
-            return f"<|system|>\n{sys_prompt}</s>\n<|user|>\n{user_prompt}</s>\n<|assistant|>\n"
-        prompt = f"<|system|>\n{sys_prompt}</s>\n"
+            return f"==SYS==\n{sys_prompt}</s>\n==USER==\n{user_prompt}</s>\n==LLM==\n"
+        prompt = f"==SYS==\n{sys_prompt}</s>\n"
         for _, (u, r) in enumerate(history):
-            prompt += f"<|user|>\n{u}</s>\n<|assistant|>\n{r}</s>\n"
-        prompt += f"<|user|>\n{user_prompt}</s>\n<|assistant|>\n"
+            prompt += f"==USER==\n{u}</s>\n==LLM==\n{r}</s>\n"
+        prompt += f"==USER==\n{user_prompt}</s>\n==LLM==\n"
         return prompt
 
 
@@ -209,12 +209,7 @@ if __name__ == "__main__":
         model_name="TinyLlama-1.1B-Chat-v1.0", # not used
     )
 
-    prompts = [
-        "I don't know why, I'm struggling to maintain focus while studying. Any suggestions?",
-        "How do I grow hair?",
-        "I have a startup called Detox Dot. What do I do to make it successful?"
-    ]
-    prompt = prompts[2]
+    prompt = "Tell me about George Washington."
 
     history = []
     for out, response in pipeline._generate(
