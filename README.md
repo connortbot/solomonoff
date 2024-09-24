@@ -54,7 +54,7 @@ Here he is explaining George Washington!
 
 ### Sampling
 - [X] Temperature
-- [ ] top_k
+- [X] top_k
 - [ ] top_p
 - [ ] beam search
 
