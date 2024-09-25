@@ -16,7 +16,7 @@ def load_model(path):
 
     state_dict = OrderedDict()
     try:
-        state_dict.update(safetensors.torch.load_file(path, device="cpu"))
+        state_dict.update(safetensors.torch.load_file(path, device="cuda"))
     except Exception as e:
         raise ValueError(f"Error loading the model from {path}: {e}")
     

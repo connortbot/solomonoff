@@ -44,6 +44,10 @@ import platform
 
 import torch
 from transformers import AutoTokenizer
+print("Would you like to run this on?\n 1.CUDA \n 2.CPU (1/2)")
+device = input()
+
+print("Using CUDA:",torch.cuda.is_available())
 
 from causal import CausalLM
 from model.samplers import SamplerBase
@@ -66,7 +70,7 @@ class Pipeline():
         token_ids_original = self.tokenizer.encode(prompt)
         if len(token_ids_original) > 512: # max_prompt_length
             token_ids_original = token_ids_original[-512 :]
-        token_ids_original = torch.tensor(token_ids_original, dtype=torch.int64).to("cpu")
+        token_ids_original = torch.tensor(token_ids_original, dtype=torch.int64).to(device)
         return token_ids_original
     
     @torch.inference_mode()
@@ -213,7 +217,7 @@ if __name__ == "__main__":
 
     history = []
     for out, response in pipeline._generate(
-            prompt, history=history, device="cpu"
+            prompt, history=history, device=device
         ):
             os.system(get_clear_command())
             print(out, flush=True)

@@ -62,5 +62,9 @@ Here he is explaining George Washington!
 ### Decoding
 - [ ] Speculative Decoding
 
+### Devices
+- [X] CPU
+- [X] CUDA
+
 ### Misc.
 - [ ] Quantization
