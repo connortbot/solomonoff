@@ -14,24 +14,43 @@ The `.safetensors` file for `tinyllama` should be downloaded to some path and pa
 
 - Simple response printing
 ```python
+chosen_device = get_device()
+
+# Model IDs and their paths
+models = {
+    "TinyLlama/TinyLlama-1.1B-Chat-v1.0": "files/TinyLlama-1.1B-Chat-v1.0/model.safetensors"
+}
 model_args = ARGS_MAP["TinyLlama-1.1B-Chat-v1.0"]
+
 # Create Tokenizer
-tokenizer = AutoTokenizer.from_pretrained("TinyLlama/TinyLlama-1.1B-Chat-v1.0", trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained(
+    "TinyLlama/TinyLlama-1.1B-Chat-v1.0", trust_remote_code=True
+)
+if model_args.vocab_size != len(tokenizer):
+    print(
+        f"WARNING: {'TinyLlama-1.1B-Chat-v1.0'}: model_args.vocab_size ({model_args.vocab_size}) != len(tokenizer) "
+        f"({len(tokenizer)})"
+    )
+
 model = CausalLM.from_pretrained(
     "files/TinyLlama-1.1B-Chat-v1.0/model.safetensors",
     model_args,
     strict=True,
+    device=chosen_device
 )
 model.eval()
 pipeline = Pipeline(
     model=model,
     tokenizer=tokenizer,
     model_name="TinyLlama-1.1B-Chat-v1.0", # not used
+    device=chosen_device
 )
-prompt = "Tell me about George Washington."
+
+prompt = input("Enter your prompt:\n")
+
 history = []
 for out, response in pipeline._generate(
-        prompt, history=history, device="cpu"
+        prompt, history=history, device=chosen_device
     ):
         os.system(get_clear_command())
         print(out, flush=True)
