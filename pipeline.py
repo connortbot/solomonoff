@@ -110,11 +110,11 @@ class Pipeline():
         if system_prompt is not None:
             sys_prompt = system_prompt.strip()
         if history is None or len(history) == 0:
-            return f"==SYS==\n{sys_prompt}</s>\n==USER==\n{user_prompt}</s>\n==LLM==\n"
+            return f"<|system|>\n{sys_prompt}</s>\n<|user|>\n{user_prompt}</s>\n<|assistant|>\n"
         prompt = f"==SYS==\n{sys_prompt}</s>\n"
         for _, (u, r) in enumerate(history):
-            prompt += f"==USER==\n{u}</s>\n==LLM==\n{r}</s>\n"
-        prompt += f"==USER==\n{user_prompt}</s>\n==LLM==\n"
+            prompt += f"<|user|>\n{u}</s>\n<|assistant|>\n{r}</s>\n"
+        prompt += f"<|user|>\n{user_prompt}</s>\n<|assistant|>\n"
         return prompt
 
 
