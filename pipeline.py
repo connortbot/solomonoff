@@ -50,6 +50,7 @@ print("CUDA Available:",torch.cuda.is_available())
 from causal import CausalLM
 from model.samplers import SamplerBase
 
+from helpers.device import get_device
 from helpers.transformer_args import ARGS_MAP
 
 class Pipeline():
@@ -186,10 +187,8 @@ def get_clear_command():
 
 
 if __name__ == "__main__":
-
-    print("Would you like to run this on?\n 1.CUDA \n 2.CPU (1/2)")
-    chosen_device = "cuda" if input() == "1" else "cpu" 
-
+    chosen_device = get_device()
+    
     # Model IDs and their paths
     models = {
         "TinyLlama/TinyLlama-1.1B-Chat-v1.0": "files/TinyLlama-1.1B-Chat-v1.0/model.safetensors"
