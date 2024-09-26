@@ -44,10 +44,8 @@ import platform
 
 import torch
 from transformers import AutoTokenizer
-print("Would you like to run this on?\n 1.CUDA \n 2.CPU (1/2)")
-device = input()
 
-print("Using CUDA:",torch.cuda.is_available())
+print("CUDA Available:",torch.cuda.is_available())
 
 from causal import CausalLM
 from model.samplers import SamplerBase
@@ -60,17 +58,19 @@ class Pipeline():
         model: CausalLM,
         tokenizer: AutoTokenizer,
         model_name: str = None,
+        device="cpu"
     ):
         self.tokenizer = tokenizer
         self.model = model
         self.model_name = model_name
+        self.device = device
     
     # Tokenizer
     def _tokenize_encode(self, prompt):
         token_ids_original = self.tokenizer.encode(prompt)
         if len(token_ids_original) > 512: # max_prompt_length
             token_ids_original = token_ids_original[-512 :]
-        token_ids_original = torch.tensor(token_ids_original, dtype=torch.int64).to(device)
+        token_ids_original = torch.tensor(token_ids_original, dtype=torch.int64).to(self.device)
         return token_ids_original
     
     @torch.inference_mode()
@@ -92,7 +92,7 @@ class Pipeline():
             out = self.tokenizer.decode(output_token_ids, skip_special_tokens=True)
             return out_all, out
 
-        self.model = self.model.to(device).eval().reset()
+        self.model = self.model.to(self.device).eval().reset()
         sampler = SamplerBase() # if config, then pass in temp and top_k
         for out in generate_yield(
             self.model,
@@ -183,7 +183,12 @@ def get_clear_command():
     clear_command = "cls" if os_name == "Windows" else "clear"
     return clear_command
 
+
+
 if __name__ == "__main__":
+
+    print("Would you like to run this on?\n 1.CUDA \n 2.CPU (1/2)")
+    chosen_device = "cuda" if input() == "1" else "cpu" 
 
     # Model IDs and their paths
     models = {
@@ -205,19 +210,21 @@ if __name__ == "__main__":
         "files/TinyLlama-1.1B-Chat-v1.0/model.safetensors",
         model_args,
         strict=True,
+        device=chosen_device
     )
     model.eval()
     pipeline = Pipeline(
         model=model,
         tokenizer=tokenizer,
         model_name="TinyLlama-1.1B-Chat-v1.0", # not used
+        device=chosen_device
     )
 
-    prompt = input("Hi! I'm Solomonoff, How can I help? \n Please enter your promt:")
+    prompt = input("Enter your prompt:\n")
 
     history = []
     for out, response in pipeline._generate(
-            prompt, history=history, device=device
+            prompt, history=history, device=chosen_device
         ):
             os.system(get_clear_command())
             print(out, flush=True)

@@ -10,13 +10,13 @@ import os
 from collections import OrderedDict
 import safetensors.torch
 
-def load_model(path):
+def load_model(path, device="cpu"):
     if not os.path.exists(path):
         raise FileNotFoundError(f"The file {path} does not exist.")
 
     state_dict = OrderedDict()
     try:
-        state_dict.update(safetensors.torch.load_file(path, device="cuda"))
+        state_dict.update(safetensors.torch.load_file(path, device=device))
     except Exception as e:
         raise ValueError(f"Error loading the model from {path}: {e}")
     

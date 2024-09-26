@@ -81,8 +81,9 @@ class CausalLM(nn.Module):
         model_path: str,
         model_args: TransformerArgs,
         strict=True,
+        device="cpu"
     ) -> "CausalLM":
-        state_dict: OrderedDict = load_model(model_path)
+        state_dict: OrderedDict = load_model(model_path, device)
         
         # For Llama, convert function
         state_dict_new = OrderedDict()
