@@ -181,7 +181,7 @@ def autoregressive_decode_yield(
 
 def get_clear_command():
     os_name = platform.system()
-    clear_command = "cls" if os_name == "Windows" else "clear"
+    clear_command = "cls" if os_name == "Windows" else "clear" #windows is cls and mac is clear
     return clear_command
 
 
@@ -218,8 +218,9 @@ if __name__ == "__main__":
         model_name="TinyLlama-1.1B-Chat-v1.0", # not used
         device=chosen_device
     )
-
-    prompt = input("Enter your prompt:\n")
+    get_clear_command()
+    os.system(get_clear_command())
+    prompt = input("<|system|>\nEnter your prompt:\n<|user|>\n")
 
     history = []
     for out, response in pipeline._generate(
